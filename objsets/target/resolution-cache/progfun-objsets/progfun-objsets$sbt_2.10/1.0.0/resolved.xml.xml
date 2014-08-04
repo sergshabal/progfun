@@ -4,7 +4,7 @@
 		module="progfun-objsets$sbt_2.10"
 		revision="1.0.0"
 		status="integration"
-		publication="20140803214535"
+		publication="20140804103428"
 	/>
 	<configurations>
 		<conf name="default" visibility="public"/>

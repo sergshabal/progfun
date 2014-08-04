@@ -35,6 +35,8 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
  */
 abstract class TweetSet {
 
+  def isEmpty: Boolean
+
   /**
    * This method takes a predicate and returns a subset of all the elements
    * in the original set for which the predicate is true.
@@ -160,6 +162,8 @@ class Empty extends TweetSet {
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
+  def isEmpty = false
+
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
     left.filterAcc(p,
       right.filterAcc(p,
@@ -200,7 +204,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
    * Returns a new `TweetSet` that is the union of `TweetSet`s `this` and `that`.
    */
   override def union(that: TweetSet): TweetSet =
-    ( left union (right union that) ) incl elem // TODO: ??? how its work
+    ( left union (right union that) ) incl elem // TODO: ??? how its work? is return set is unsorted?
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -209,18 +213,30 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
    *
    * Hint: the method `remove` on TweetSet will be very useful.
    */
-  override def descendingByRetweet: TweetList = ???
+  override def descendingByRetweet: TweetList =
+    new Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
+
 
   /**
    * Returns the tweet from this set which has the greatest retweet count.
    *
    * Calling `mostRetweeted` on an empty set should throw an exception of
    * type `java.util.NoSuchElementException`.
-   *
-   * Question: Should we implment this method here, or should it remain abstract
-   * and be implemented in the subclasses?
    */
-  override def mostRetweeted: Tweet = ???
+  override def mostRetweeted: Tweet = {
+    lazy val leftMost = left.mostRetweeted
+    lazy val rightMost = right.mostRetweeted
+
+    if (!left.isEmpty && leftMost.retweets > elem.retweets)
+      if (!right.isEmpty && rightMost.retweets > leftMost.retweets)
+        rightMost
+      else
+        leftMost
+    else if (!right.isEmpty && rightMost.retweets > elem.retweets)
+      rightMost
+    else
+      elem
+  }
 }
 
 trait TweetList {
@@ -249,14 +265,17 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-  lazy val googleTweets: TweetSet = ???
-  lazy val appleTweets: TweetSet = ???
+  lazy val googleTweets: TweetSet =
+    TweetReader.allTweets.filter(t => google.exists(w => t.text.contains(w)))
+  lazy val appleTweets: TweetSet =
+    TweetReader.allTweets.filter(t => apple.exists(w => t.text.contains(w)))
+
 
   /**
    * A list of all tweets mentioning a keyword from either apple or google,
    * sorted by the number of retweets.
    */
-  lazy val trending: TweetList = ???
+  lazy val trending: TweetList = (googleTweets union appleTweets).descendingByRetweet
 }
 
 object Main extends App {

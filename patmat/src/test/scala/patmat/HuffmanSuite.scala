@@ -45,7 +45,21 @@ class HuffmanSuite extends FunSuite {
 
   test("combine of some leaf list") {
     val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
-    assert(combine(leaflist) === List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4)))
+    val res = List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4))
+    assert(combine(leaflist) === res)
+  }
+
+  test("combine1 of some leaf list") {
+    val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
+    val res = List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4))
+    assert(combine1(leaflist) === res)
+  }
+
+  test("create code tree"){
+    val s = "abracadabda"
+    val tree = createCodeTree(s.toList)
+    println(tree)
+    assert(weight(tree) === s.length)
   }
 
   test("decode and encode a very short text should be identity") {
